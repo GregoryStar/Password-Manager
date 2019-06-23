@@ -2,11 +2,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -17,18 +13,28 @@ import javafx.scene.text.Text;
 
 public class AccountInfoView {
     GridPane grid;
-    Account account;
     TextField titleField;
     TextField emailField;
     TextField usernameField;
     TextField passwordField;
-    TextField additionalInstructionsField;
+    TextArea additionalInstructionsField;
+    Button saveChangesButton;
+    Button returnToAccountListButton;
     TableView<Password> passwordTable;
     TableView<RecoveryQuestion> recoveryTable;
 
 
-    public AccountInfoView(Account account){
-        this.account = account;
+    public AccountInfoView(){
+        //Initialize input components
+        titleField = new TextField();
+        emailField = new TextField();
+        usernameField = new TextField();
+        passwordField = new TextField();
+        additionalInstructionsField = new TextArea();
+        saveChangesButton = new Button();
+        returnToAccountListButton = new Button();
+        passwordTable = new TableView<Password>();
+        recoveryTable = new TableView<RecoveryQuestion>();
         generateView();
     }
 
@@ -37,7 +43,7 @@ public class AccountInfoView {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(10, 25, 25, 45));
+        grid.setPadding(new Insets(10, 25, 25, 50));
         //grid.setAlignment(Pos.TOP_CENTER);
 
         //Set column constraints
@@ -57,34 +63,30 @@ public class AccountInfoView {
         int rowIndex = 0;
         Text scenetitle = new Text("Account Information");
         scenetitle.setFont(Font.font("Ariel", FontWeight.NORMAL, 30));
-        grid.add(scenetitle, 0, rowIndex, 5, 1);
+        grid.add(scenetitle, 0, rowIndex, 2, 1);
         rowIndex++;
 
         //Account title
         Label accountTitleLabel = new Label("Account Title:");
         grid.add(accountTitleLabel, 0, rowIndex);
-        titleField = new TextField(account.getAccountTitle());
         grid.add(titleField, 1, rowIndex);
         rowIndex++;
 
         //Email address
         Label emailLabel = new Label("Email Address:");
         grid.add(emailLabel, 0, rowIndex);
-        emailField = new TextField(account.getEmailAddress());
         grid.add(emailField, 1, rowIndex);
         rowIndex++;
 
         //Username
         Label usernameLabel = new Label("Username:");
         grid.add(usernameLabel, 0, rowIndex);
-        usernameField = new TextField(account.getUsername());
         grid.add(usernameField, 1, rowIndex);
         rowIndex++;
 
         //Password
         Label passwordLabel = new Label("Password:");
         grid.add(passwordLabel, 0, rowIndex);
-        passwordField = new TextField(account.getCurrentPassword().passcode);
         grid.add(passwordField, 1, rowIndex);
         rowIndex++;
 
@@ -101,10 +103,6 @@ public class AccountInfoView {
         TableColumn passwordDateColumn = new TableColumn("Date Set");
         passwordDateColumn.setMinWidth(100);
         passwordDateColumn.setPrefWidth(200);
-        ObservableList<Password> previousPasswordData = FXCollections.observableArrayList();
-        for (int i = 0; i < account.previousPasswords.size(); i++) {
-            previousPasswordData.add(account.previousPasswords.get(i));
-        }
 
         passcodeColumn.setCellValueFactory(
                 new PropertyValueFactory<Password, String>("passcode")
@@ -115,7 +113,8 @@ public class AccountInfoView {
         passwordDateColumn.setCellValueFactory(
                 new PropertyValueFactory<Password, String>("dateSet")
         );
-        passwordTable = new TableView<Password>(previousPasswordData);
+        //passwordTable = new TableView<Password>(previousPasswordData);
+        passwordTable = new TableView<Password>();
         passwordTable.setEditable(false);
         passwordTable.getColumns().addAll(passcodeColumn, hintColumn, passwordDateColumn);
         passwordTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -136,11 +135,6 @@ public class AccountInfoView {
         TableColumn recoveryDateColumn = new TableColumn("Date Set");
         recoveryDateColumn.setMinWidth(100);
         recoveryDateColumn.setPrefWidth(200);
-        ObservableList<RecoveryQuestion> recoveryQuestionsData = FXCollections.observableArrayList();
-        for (int i = 0; i < account.recoveryQuestions.size(); i++) {
-            recoveryQuestionsData.add(account.recoveryQuestions.get(i));
-        }
-
         questionColumn.setCellValueFactory(
                 new PropertyValueFactory<RecoveryQuestion, String>("question")
         );
@@ -150,7 +144,8 @@ public class AccountInfoView {
         recoveryDateColumn.setCellValueFactory(
                 new PropertyValueFactory<RecoveryQuestion, String>("dateSet")
         );
-        recoveryTable = new TableView<RecoveryQuestion>(recoveryQuestionsData);
+        //recoveryTable = new TableView<RecoveryQuestion>(recoveryQuestionsData);
+        recoveryTable = new TableView<RecoveryQuestion>();
         recoveryTable.setEditable(false);
         recoveryTable.getColumns().addAll(questionColumn, answerColumn, recoveryDateColumn);
         recoveryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -162,9 +157,35 @@ public class AccountInfoView {
         Label additionalInstructionsLabel = new Label("Additional Instructions for Account:");
         grid.add(additionalInstructionsLabel, 0, rowIndex, 2, 1);
         rowIndex++;
-        additionalInstructionsField = new TextField(account.getAdditionalInstructions());
-        grid.add(additionalInstructionsField, 0, rowIndex, 2, 2);
+        additionalInstructionsField = new TextArea();
+        additionalInstructionsField.setWrapText(true);
+        grid.add(additionalInstructionsField, 0, rowIndex, 2, 1);
         rowIndex++;
+
+        saveChangesButton = new Button("Save Changes");
+        grid.add(saveChangesButton, 0, rowIndex);
+        returnToAccountListButton = new Button("Return to Account List");
+        grid.add(returnToAccountListButton, 1, rowIndex);
+    }
+
+    public void update(Account account){
+        titleField.setText(account.getAccountTitle());
+        emailField.setText(account.getEmailAddress());
+        usernameField.setText(account.getUsername());
+        passwordField.setText(account.getCurrentPassword().passcode);
+        additionalInstructionsField.setText(account.getAdditionalInstructions());
+
+        ObservableList<Password> previousPasswordData = FXCollections.observableArrayList();
+        for (int i = 0; i < account.previousPasswords.size(); i++) {
+            previousPasswordData.add(account.previousPasswords.get(i));
+        }
+        passwordTable.setItems(previousPasswordData);
+
+        ObservableList<RecoveryQuestion> recoveryQuestionsData = FXCollections.observableArrayList();
+        for (int i = 0; i < account.recoveryQuestions.size(); i++) {
+            recoveryQuestionsData.add(account.recoveryQuestions.get(i));
+        }
+        recoveryTable.setItems(recoveryQuestionsData);
     }
 
     public GridPane getGridPane(){

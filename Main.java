@@ -92,8 +92,8 @@ public class Main extends Application {
 
     public void accountSelected(Account selectedAccount){
         //Create a new Scene with the given GridPane
-        AccountInfoView accountInfoView = new AccountInfoView(selectedAccount);
-        GridPane accountInfoGrid = accountInfoView.getGridPane();
+        AccountInfoController accountInfoController = new AccountInfoController(selectedAccount);
+        GridPane accountInfoGrid = accountInfoController.getViewGridPane();
         accountInfoScene = new Scene(accountInfoGrid, 500, 700);
         primaryStage.setScene(accountInfoScene);
     }
