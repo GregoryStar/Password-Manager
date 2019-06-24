@@ -1,24 +1,13 @@
 import javafx.application.Application;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,20 +26,12 @@ public class Main extends Application {
         System.out.println("Using file to get data to DB");
         accountDB = new AccountDB(accountDataFile);
         System.out.println("Writing that data back to the file");
-        try {
-            accountDB.saveAccountData(accountDataFile);
-        } catch (IOException e){
-            System.out.println("Failed to write data to file!");
-        }
+        accountDB.saveAccountData();
 
         //The main scene will consist of a few controls on top followed by a list of accounts below
         List<Account> allAccounts = accountDB.getAccounts();
-        ObservableList<Account> accountTitlesList = FXCollections.observableArrayList();
+        ObservableList<Account> accountTitlesList = FXCollections.observableArrayList(allAccounts);
         final ListView accountSelectLayout = new ListView();
-        for(Account account : allAccounts){
-            //Button newAccount = new Button(accountTitle);
-            accountTitlesList.add(account);
-        }
         accountSelectLayout.setItems(accountTitlesList);
         accountSelectLayout.setCellFactory(param -> new ListCell<Account>() {
             @Override
@@ -92,7 +73,7 @@ public class Main extends Application {
 
     public void accountSelected(Account selectedAccount){
         //Create a new Scene with the given GridPane
-        AccountInfoController accountInfoController = new AccountInfoController(selectedAccount);
+        AccountInfoController accountInfoController = new AccountInfoController(selectedAccount, accountDB);
         GridPane accountInfoGrid = accountInfoController.getViewGridPane();
         accountInfoScene = new Scene(accountInfoGrid, 500, 700);
         primaryStage.setScene(accountInfoScene);

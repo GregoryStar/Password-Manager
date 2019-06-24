@@ -22,16 +22,28 @@ public class Account {
 
     public Account(JSONObject jsonAccount){
         //Simple data
-        this.accountTitle = (String)jsonAccount.get("accountTitle");
-        this.additionalInstructions = (String)jsonAccount.get("additionalInstructions");
-        this.emailAddress = (String)jsonAccount.get("emailAddress");
-        this.username = (String)jsonAccount.get("username");
-        this.accountID = (String)jsonAccount.get("accountID");
-        this.accountType = Category.FINANCE; //Temporary
+        accountTitle = (String)jsonAccount.get("accountTitle");
+        additionalInstructions = (String)jsonAccount.get("additionalInstructions");
+        emailAddress = (String)jsonAccount.get("emailAddress");
+        username = (String)jsonAccount.get("username");
+        accountID = (String)jsonAccount.get("accountID");
+        accountType = Category.FINANCE; //Temporary
 
         //Initialize objects
-        this.previousPasswords = new ArrayList<Password>(); //Temporary
-        this.recoveryQuestions = new ArrayList<RecoveryQuestion>(); //Temporary
+        previousPasswords = new ArrayList<>();
+        JSONArray jsonPreviousPasswords = (JSONArray)jsonAccount.get("previousPasswords");
+        for(Object jsonPassword : jsonPreviousPasswords){
+            //Cast the jsonPassword object to a map so that details can be extracted
+            Map<String, String> mapJsonPassword = (Map)jsonPassword;
+            String tempCode = mapJsonPassword.get("passcode");
+            String tempHint = mapJsonPassword.get("hint");
+            String tempDate = mapJsonPassword.get("dateSet");
+            Password tempPass = new Password(tempCode, tempDate, tempHint);
+            previousPasswords.add(tempPass);
+        }
+
+        //Temporary
+        recoveryQuestions = new ArrayList<>(); //Temporary
 
         //Extract password data
         Map jsonPassword = (Map)jsonAccount.get("currentPassword");
@@ -39,12 +51,12 @@ public class Account {
         String dateSet = (String)jsonPassword.get("dateSet");
         String hint = (String)jsonPassword.get("hint");
         Password password = new Password(passcode, dateSet, hint);
-        this.currentPassword = password;
-        this.previousPasswords.add(password);
+        currentPassword = password;
+        previousPasswords.add(password);
     }
 
     public Account(Password password, String accountName, Category accountType){
-        previousPasswords = new ArrayList<Password>();
+        previousPasswords = new ArrayList<>();
 
         this.currentPassword = password;
         previousPasswords.add(password);
@@ -82,6 +94,10 @@ public class Account {
         return previousPasswords;
     }
 
+    public void setPreviousPasswords(List<Password> previousPasswords){
+        this.previousPasswords = previousPasswords;
+    }
+
     public void setAdditionalInstructions(String additionalInstructions){
         this.additionalInstructions = additionalInstructions;
     }
@@ -92,6 +108,10 @@ public class Account {
 
     public void addRecoveryQuestion(RecoveryQuestion recoveryQuestion){
         recoveryQuestions.add(recoveryQuestion);
+    }
+
+    public void setRecoveryQuestions(List<RecoveryQuestion> recoveryQuestions){
+        this.recoveryQuestions = recoveryQuestions;
     }
 
     public List<RecoveryQuestion> getRecoveryQuestions(){
@@ -140,7 +160,7 @@ public class Account {
             Map current = new LinkedHashMap(3);
             current.put("passcode", password.passcode);
             current.put("hint", password.hint);
-            current.put("dateSet", password.dateSet.toString());
+            current.put("dateSet", password.dateSet);
             jsonPasswordArray.add(current);
         }
         jsonRep.put("previousPasswords", jsonPasswordArray);
@@ -151,7 +171,7 @@ public class Account {
             Map current = new LinkedHashMap(3);
             current.put("question", recoveryQuestion.question);
             current.put("answer", recoveryQuestion.answer);
-            current.put("dateSet", recoveryQuestion.dateCreated.toString());
+            current.put("dateSet", recoveryQuestion.dateCreated);
             jsonRecoveryQuestionArray.add(current);
         }
         jsonRep.put("recoveryQuestions", jsonRecoveryQuestionArray);
